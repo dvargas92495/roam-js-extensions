@@ -1,10 +1,12 @@
 import {
+  createBlockObserver,
   createHashtagObserver,
   getBlockUidFromTarget,
   getPageTitleByBlockUid,
   getPageUidByPageTitle,
   getParentUidByBlockUid,
   getTextByBlockUid,
+  getUids,
 } from "roam-client";
 import {
   getRoamUrl,
@@ -20,20 +22,20 @@ runExtension(ID, () => {
     attribute: "data-roamjs-context-parent",
     callback: (s) => {
       if (s.getAttribute("data-tag") === "parent") {
-          const uid = getBlockUidFromTarget(s);
-          const parentUid = getParentUidByBlockUid(uid);
-          const parentText = getTextByBlockUid(parentUid);
-          s.className = "rm-block-ref dont-focus-block";
-          s.style.userSelect = "none";
-          s.innerHTML = parseRoamMarked(parentText);
-          s.onmousedown = (e) => e.stopPropagation();
-          s.onclick = (e) => {
-            if (e.shiftKey) {
-              openBlockInSidebar(parentUid);
-            } else {
-              window.location.assign(getRoamUrl(parentUid));
-            }
-          };
+        const uid = getBlockUidFromTarget(s);
+        const parentUid = getParentUidByBlockUid(uid);
+        const parentText = getTextByBlockUid(parentUid);
+        s.className = "rm-block-ref dont-focus-block";
+        s.style.userSelect = "none";
+        s.innerHTML = parseRoamMarked(parentText);
+        s.onmousedown = (e) => e.stopPropagation();
+        s.onclick = (e) => {
+          if (e.shiftKey) {
+            openBlockInSidebar(parentUid);
+          } else {
+            window.location.assign(getRoamUrl(parentUid));
+          }
+        };
       }
     },
   });
@@ -71,5 +73,15 @@ runExtension(ID, () => {
         };
       }
     },
+  });
+
+  createBlockObserver((b: HTMLDivElement) => {
+    const { blockUid } = getUids(b);
+    const found = window.roamAlphaAPI.q(
+      `[:find ?t :where [?c :block/uid "${blockUid}"] [?r :block/parents ?c] [?r :block/refs ?e] [?e :node/title ?t]]`
+    ).map(p => p[0] as string);
+    if (found.includes('context')) {
+      console.log(found);
+    }
   });
 });
