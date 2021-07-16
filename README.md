@@ -19,3 +19,5 @@ As part of a RoamJS Developer effort started in April, 2021, we've started to mi
 ## Contributing
 
 See the [Contributing Guide](./CONTRIBUTING.md) for more information!
+
+This is a permanent test branch for debugging.
